@@ -1,0 +1,13 @@
+/node_modules
+/src
+tsconfig.json
+/tmp
+/.vscode
+/build
+.gitignore
+.eslintrc.json
+.eslintignore
+.prettierrc
+bun.lockb
+package-lock.json
+tsconfig.json

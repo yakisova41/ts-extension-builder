@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "useDefineForClassFields": true,
+    "lib": ["ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "noImplicitReturns": true,
+    "noEmit": false,
+    "baseUrl": ".",
+    "sourceMap": true,
+    "outDir": "./dist/",
+    "declaration": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["bin/", "dist/", "build/", "tmp/"]
+}

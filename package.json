@@ -1,0 +1,45 @@
+{
+  "name": "ts-extension-builder",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "lint": "npx eslint --fix src/index.ts",
+    "build": "node build/bundle.js",
+    "postbuild": "tsc --declaration --emitDeclarationOnly --declarationDir './dist/types/'",
+    "watch": "node build/watch.js"
+  },
+  "bin": {
+    "ts-extension-builder": "./bin/ts-extension-builder"
+  },
+  "type": "commonjs",
+  "author": "yakisova41",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/fs-extra": "^11.0.1",
+    "@types/node": "^20.1.3",
+    "@types/requirejs": "^2.1.34",
+    "@types/ws": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "latest",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "latest",
+    "prettier": "^2.8.8",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "amdefine": "^1.0.1",
+    "app-root-path": "^3.1.0",
+    "esbuild": "^0.17.18",
+    "express": "^4.18.2",
+    "fs-extra": "^11.1.1",
+    "json-schema-to-typescript": "^13.0.1",
+    "requirejs": "^2.3.6",
+    "ws": "^8.13.0"
+  }
+}
