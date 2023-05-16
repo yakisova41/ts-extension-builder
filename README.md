@@ -106,5 +106,9 @@ module.exports = {
   },
   //chrome extension assets
   assetsDir: path.join(__dirname, "assets"),
+  //esbuild options
+  esBuild: {
+    outfile: path.join(__dirname, "dist/index.js"),
+  },
 };
 ```
