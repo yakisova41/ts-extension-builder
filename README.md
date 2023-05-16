@@ -39,9 +39,10 @@ npx ts-extension-builder dev minify
 
 - userscript
 
-## env
+## minify
 
-- development
+- true
+- false
 
 # config
 
