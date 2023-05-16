@@ -2142,7 +2142,7 @@ var require_jsonfile = __commonJS({
       await universalify.fromCallback(fs.writeFile)(file, str, options);
     }
     var writeFile = universalify.fromPromise(_writeFile);
-    function writeFileSync6(file, obj, options = {}) {
+    function writeFileSync5(file, obj, options = {}) {
       const fs = options.fs || _fs;
       const str = stringify(obj, options);
       return fs.writeFileSync(file, str, options);
@@ -2151,7 +2151,7 @@ var require_jsonfile = __commonJS({
       readFile,
       readFileSync: readFileSync2,
       writeFile,
-      writeFileSync: writeFileSync6
+      writeFileSync: writeFileSync5
     };
     module2.exports = jsonfile;
   }
@@ -24471,10 +24471,10 @@ var require_view = __commonJS({
     var debug = require_src4()("express:view");
     var path = require("path");
     var fs = require("fs");
-    var dirname5 = path.dirname;
+    var dirname4 = path.dirname;
     var basename = path.basename;
     var extname = path.extname;
-    var join9 = path.join;
+    var join8 = path.join;
     var resolve = path.resolve;
     module2.exports = View;
     function View(name, options) {
@@ -24510,7 +24510,7 @@ var require_view = __commonJS({
       for (var i = 0; i < roots.length && !path2; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
-        var dir = dirname5(loc);
+        var dir = dirname4(loc);
         var file = basename(loc);
         path2 = this.resolve(dir, file);
       }
@@ -24522,12 +24522,12 @@ var require_view = __commonJS({
     };
     View.prototype.resolve = function resolve2(dir, file) {
       var ext = this.ext;
-      var path2 = join9(dir, file);
+      var path2 = join8(dir, file);
       var stat = tryStat(path2);
       if (stat && stat.isFile()) {
         return path2;
       }
-      path2 = join9(dir, basename(file, ext), "index" + ext);
+      path2 = join8(dir, basename(file, ext), "index" + ext);
       stat = tryStat(path2);
       if (stat && stat.isFile()) {
         return path2;
@@ -25594,7 +25594,7 @@ var require_send = __commonJS({
     var Stream = require("stream");
     var util = require("util");
     var extname = path.extname;
-    var join9 = path.join;
+    var join8 = path.join;
     var normalize = path.normalize;
     var resolve = path.resolve;
     var sep = path.sep;
@@ -25813,7 +25813,7 @@ var require_send = __commonJS({
           return res;
         }
         parts = path2.split(sep);
-        path2 = normalize(join9(root, path2));
+        path2 = normalize(join8(root, path2));
       } else {
         if (UP_PATH_REGEXP.test(path2)) {
           debug('malicious path "%s"', path2);
@@ -25954,7 +25954,7 @@ var require_send = __commonJS({
             return self.onStatError(err);
           return self.error(404);
         }
-        var p = join9(path2, self._index[i]);
+        var p = join8(path2, self._index[i]);
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2)
@@ -29312,31 +29312,17 @@ function userScriptBuild(minify, env) {
 
 // src/builds/extensionBuild.ts
 var import_esbuild2 = require("esbuild");
-var import_path6 = require("path");
+var import_path5 = require("path");
 
 // src/plugins/makeManifest.ts
 var import_fs3 = require("fs");
 var import_path2 = require("path");
-function makeManifest(manifest, userScriptHeader) {
+function makeManifest(manifest) {
   return {
     name: "makeManifest",
     setup(build4) {
       build4.onEnd(() => {
         const outFile = build4.initialOptions.outfile;
-        if (userScriptHeader["@match"] !== void 0) {
-          manifest.content_scripts = [
-            {
-              matches: [userScriptHeader["@match"]],
-              js: ["contentScript.js"]
-            }
-          ];
-          manifest.web_accessible_resources = [
-            {
-              matches: [userScriptHeader["@match"]],
-              resources: ["embed.js"]
-            }
-          ];
-        }
         if (outFile !== void 0) {
           (0, import_fs3.writeFileSync)(
             (0, import_path2.join)((0, import_path2.dirname)(outFile), "/manifest.json"),
@@ -29398,60 +29384,32 @@ function copyAssets(assetsDir) {
   };
 }
 
-// src/plugins/makeContentScript.ts
-var import_fs6 = require("fs");
-var import_path5 = require("path");
-function makeContentScript() {
-  return {
-    name: "makeContentScript",
-    setup(build4) {
-      build4.onEnd(() => {
-        const outFile = build4.initialOptions.outfile;
-        if (outFile !== void 0) {
-          (0, import_fs6.writeFileSync)(
-            (0, import_path5.join)((0, import_path5.dirname)(outFile), "/contentScript.js"),
-            [
-              "const head = document.head;",
-              "const script = document.createElement('script');",
-              "script.src = chrome.runtime.getURL('embed.js');",
-              "head.appendChild(script);"
-            ].join("\n")
-          );
-        }
-      });
-    }
-  };
-}
-
 // src/builds/extensionBuild.ts
 function extensionBuild(minify, env) {
   const workingDir = process.cwd();
-  void getConfig().then(
-    (_0) => __async(this, [_0], function* ({ esBuild, manifest, locales, assetsDir, userScriptHeader }) {
-      if (manifest !== void 0) {
-        const options = buildOptionsFactory(
-          {
-            logLevel: "info",
-            plugins: [
-              makeManifest(manifest, userScriptHeader),
-              ...locales !== void 0 ? [makeLocales(locales)] : [],
-              ...assetsDir !== void 0 ? [copyAssets(assetsDir)] : [],
-              makeContentScript()
-            ],
-            define: {
-              "process.env.NODE_ENV": `'${env}'`
-            },
-            bundle: true,
-            minify,
-            entryPoints: [(0, import_path6.join)(workingDir, "src", "index.ts")],
-            outfile: (0, import_path6.join)(workingDir, "dist", `/extension/embed.js`)
+  void getConfig().then((_0) => __async(this, [_0], function* ({ esBuild, manifest, locales, assetsDir }) {
+    if (manifest !== void 0) {
+      const options = buildOptionsFactory(
+        {
+          logLevel: "info",
+          plugins: [
+            makeManifest(manifest),
+            ...locales !== void 0 ? [makeLocales(locales)] : [],
+            ...assetsDir !== void 0 ? [copyAssets(assetsDir)] : []
+          ],
+          define: {
+            "process.env.NODE_ENV": `'${env}'`
           },
-          esBuild
-        );
-        void (0, import_esbuild2.build)(options);
-      }
-    })
-  );
+          bundle: true,
+          minify,
+          entryPoints: [(0, import_path5.join)(workingDir, "src", "index.ts")],
+          outfile: (0, import_path5.join)(workingDir, "dist", `/extension/contentScript.js`)
+        },
+        esBuild
+      );
+      void (0, import_esbuild2.build)(options);
+    }
+  }));
 }
 
 // src/commands/buildCommand.ts
@@ -29479,11 +29437,11 @@ var buildCommand_default = build3;
 
 // src/builds/userScriptDev.ts
 var import_esbuild3 = require("esbuild");
-var import_path9 = require("path");
+var import_path8 = require("path");
 
 // src/lib/createDevClient.ts
-var import_fs7 = require("fs");
-var import_path7 = require("path");
+var import_fs6 = require("fs");
+var import_path6 = require("path");
 function scriptFactory(host, port, sockport, userScriptHeader) {
   return `${createUserScriptHeaderString(userScriptHeader)}
 const socket = new WebSocket("ws://${host}:${sockport}");
@@ -29505,18 +29463,18 @@ import("http://${host}:${port}/script");`;
 }
 function createDevClient(_0, _1) {
   return __async(this, arguments, function* ({ host, port, websocket }, userScriptHeader) {
-    if (!(0, import_fs7.existsSync)((0, import_path7.join)(__dirname, "../tmp"))) {
-      (0, import_fs7.mkdirSync)((0, import_path7.join)(__dirname, "../tmp"));
+    if (!(0, import_fs6.existsSync)((0, import_path6.join)(__dirname, "../tmp"))) {
+      (0, import_fs6.mkdirSync)((0, import_path6.join)(__dirname, "../tmp"));
     }
-    (0, import_fs7.writeFileSync)(
-      (0, import_path7.join)(__dirname, "../tmp/client.user.js"),
+    (0, import_fs6.writeFileSync)(
+      (0, import_path6.join)(__dirname, "../tmp/client.user.js"),
       scriptFactory(host, port, websocket, userScriptHeader)
     );
   });
 }
 
 // src/lib/devServer.ts
-var import_path8 = require("path");
+var import_path7 = require("path");
 
 // node_modules/ws/wrapper.mjs
 var import_stream = __toESM(require_stream(), 1);
@@ -29548,10 +29506,10 @@ function startExpress() {
       const app = (0, import_express.default)();
       app.get("/script", (req, res) => {
         res.header("Access-Control-Allow-Origin", "*");
-        res.sendFile((0, import_path8.join)(__dirname, "../tmp", "script.js"));
+        res.sendFile((0, import_path7.join)(__dirname, "../tmp", "script.js"));
       });
       app.get("/index.user.js", (req, res) => {
-        res.sendFile((0, import_path8.join)(__dirname, "../tmp", "client.user.js"));
+        res.sendFile((0, import_path7.join)(__dirname, "../tmp", "client.user.js"));
       });
       app.listen(devServer.port, devServer.host, () => {
         console.log(
@@ -29617,8 +29575,8 @@ function userScriptDev(minify) {
           }
         ],
         bundle: true,
-        entryPoints: [(0, import_path9.join)(workingDir, "src", "index.ts")],
-        outfile: (0, import_path9.join)(__dirname, "../tmp/script.js")
+        entryPoints: [(0, import_path8.join)(workingDir, "src", "index.ts")],
+        outfile: (0, import_path8.join)(__dirname, "../tmp/script.js")
       },
       esBuild
     );

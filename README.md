@@ -1,6 +1,6 @@
 # ts-extension-builder
 
-userscript から chrome 拡張機能をビルドするパッケージ
+userscript と chrome 拡張をビルドするパッケージ
 
 # install
 
@@ -66,14 +66,18 @@ module.exports = {
     websocket: 5174,
   },
   //chrome extension manifest v3
-  //Since script loading is automatically configured
-  //The content_scripts and web_accessible_resources properties are not available.
   manifest: {
     name: "__MSG_Name__",
     short_name: "name",
     version: 0.1,
     manifest_version: 3,
     description: "__MSG_Description__",
+    content_scripts: [
+      {
+        matches: ["http://example.com"],
+        js: ["contentScript.js"],
+      },
+    ],
     default_locale: "en",
     icons: {
       16: "assets/icon16.png",
@@ -102,7 +106,5 @@ module.exports = {
   },
   //chrome extension assets
   assetsDir: path.join(__dirname, "assets"),
-  //esbuild options
-  esBuild: {},
 };
 ```
