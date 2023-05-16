@@ -29238,7 +29238,7 @@ function buildOptionsFactory(options, configOptions) {
   if (configOptions !== void 0) {
     Object.keys(configOptions).forEach((key) => {
       if (key === "plugins" && buildOptions.plugins !== void 0) {
-        buildOptions.plugins = [...buildOptions.plugins, configOptions[key]];
+        buildOptions.plugins = [...buildOptions.plugins, ...configOptions[key]];
       } else {
         buildOptions[key] = configOptions[key];
       }
