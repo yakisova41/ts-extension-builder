@@ -34,6 +34,7 @@ export default function userScriptDev(minify: boolean): void {
           },
         ],
         bundle: true,
+        format: "esm",
         entryPoints: [join(workingDir, "src", "index.ts")],
         outfile: join(__dirname, "../tmp/script.js"),
       },

@@ -3,6 +3,7 @@ import buildOptionsFactory from "../lib/buildOptionsFactory";
 import { build } from "esbuild";
 import { join } from "path";
 import { writeUserscriptHeader } from "src/plugins/writeUserScriptHeader";
+import createEntry from "src/lib/createEntry";
 
 export default function userScriptBuild(
   minify: boolean,
@@ -20,7 +21,8 @@ export default function userScriptBuild(
         },
         bundle: true,
         minify,
-        entryPoints: [join(workingDir, "src", "index.ts")],
+        format: "cjs",
+        entryPoints: [createEntry(join(workingDir, "src", "index.ts"))],
         outfile: join(workingDir, "dist", `index.user.js`),
       },
       esBuild
