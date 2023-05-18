@@ -71,7 +71,7 @@ module.exports = {
   manifest: {
     name: "__MSG_Name__",
     short_name: "name",
-    version: 0.1,
+    version: "0.1",
     manifest_version: 3,
     description: "__MSG_Description__",
     default_locale: "en",
@@ -106,3 +106,17 @@ module.exports = {
   esBuild: {},
 };
 ```
+
+# script
+
+src/index.ts
+
+```ts
+import { type GM_args } from "ts-extension-builder/dist/types";
+
+export default ({ GM_xmlhttpRequest }: GM_args): void => {
+  //yeah
+};
+```
+
+The process you want to user-script must be exported by default.
