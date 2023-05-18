@@ -10,7 +10,7 @@ export default function buildOptionsFactory(
     Object.keys(configOptions).forEach((key) => {
       if (key === "plugins" && buildOptions.plugins !== undefined) {
         buildOptions.plugins = [...buildOptions.plugins, ...configOptions[key]];
-      } else {
+      } else if (key !== "format") {
         buildOptions[key] = configOptions[key];
       }
     });

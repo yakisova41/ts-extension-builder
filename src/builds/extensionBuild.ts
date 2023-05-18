@@ -6,6 +6,7 @@ import { makeManifest } from "src/plugins/makeManifest";
 import { makeLocales } from "src/plugins/makeLocales";
 import { copyAssets } from "src/plugins/copyAssets";
 import { makeContentScript } from "src/plugins/makeContentScript";
+import createEntry from "src/lib/createEntry";
 
 export default function extensionBuild(
   minify: boolean,
@@ -30,7 +31,8 @@ export default function extensionBuild(
             },
             bundle: true,
             minify,
-            entryPoints: [join(workingDir, "src", "index.ts")],
+            format: "cjs",
+            entryPoints: [createEntry(join(workingDir, "src", "index.ts"))],
             outfile: join(workingDir, "dist", `/extension/embed.js`),
           },
           esBuild
