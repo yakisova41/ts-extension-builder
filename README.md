@@ -114,9 +114,9 @@ src/index.ts
 ```ts
 import { type GM_args } from "ts-extension-builder/dist/types";
 
-export default ({ GM_xmlhttpRequest }: GM_args): void => {
+export default function main({ GM_xmlhttpRequest }: GM_args): void {
   //yeah
-};
+}
 ```
 
-The process you want to user-script must be exported by default.
+The main function must be exported by default.
