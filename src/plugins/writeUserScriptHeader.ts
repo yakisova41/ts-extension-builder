@@ -32,15 +32,9 @@ export function createUserScriptHeaderString(
   const userscriptHeaders: string[] = [];
 
   userscriptHeaders.push("// ==UserScript==");
-  let key: keyof UserScriptHeader;
-  for (key in userScriptHeader) {
-    if (key[0] === "@") {
-      const val = userScriptHeader[key];
-      if (val !== undefined) {
-        userscriptHeaders.push(`// ${key} ${val}`);
-      }
-    }
-  }
+  userScriptHeader.forEach(([key, val]) => {
+    userscriptHeaders.push(`// ${key} ${val}`);
+  });
   userscriptHeaders.push("// ==/UserScript==");
 
   return userscriptHeaders.join("\n");

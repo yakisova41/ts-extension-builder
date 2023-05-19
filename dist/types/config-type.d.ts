@@ -13,7 +13,8 @@ export interface DevServer {
     host: string;
     websocket: number;
 }
-export interface UserScriptHeader {
+export type UserScriptHeader = Array<[keyof UserScriptHeaderProps, string]>;
+export interface UserScriptHeaderProps {
     "@name": string;
     "@namespace"?: string;
     "@copyright"?: string;
