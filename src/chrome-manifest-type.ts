@@ -101,7 +101,7 @@ export interface JSONSchemaForGoogleChromeExtensionManifestFiles {
        *
        * @minItems 1
        */
-      matches: [MatchPattern, ...MatchPattern[]];
+      matches: MatchPattern[];
       /**
        * Excludes pages that this content script would otherwise be injected into.
        */
@@ -442,6 +442,12 @@ export interface JSONSchemaForGoogleChromeExtensionManifestFiles {
   spellcheck?: unknown;
   storage?: unknown;
   system_indicator?: unknown;
+  web_accessible_resources?: {
+    resources?: string[];
+    matches?: string[];
+    use_dynamic_url?: boolean;
+    extension_ids?: string[];
+  }[];
   [k: string]: unknown;
 }
 /**

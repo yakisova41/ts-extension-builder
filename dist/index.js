@@ -29280,15 +29280,9 @@ function writeUserscriptHeader(userScriptHeader) {
 function createUserScriptHeaderString(userScriptHeader) {
   const userscriptHeaders = [];
   userscriptHeaders.push("// ==UserScript==");
-  let key;
-  for (key in userScriptHeader) {
-    if (key[0] === "@") {
-      const val = userScriptHeader[key];
-      if (val !== void 0) {
-        userscriptHeaders.push(`// ${key} ${val}`);
-      }
-    }
-  }
+  userScriptHeader.forEach(([key, val]) => {
+    userscriptHeaders.push(`// ${key} ${val}`);
+  });
   userscriptHeaders.push("// ==/UserScript==");
   return userscriptHeaders.join("\n");
 }
@@ -29356,19 +29350,38 @@ function makeManifest(manifest, userScriptHeader) {
     setup(build4) {
       build4.onEnd(() => {
         const outFile = build4.initialOptions.outfile;
-        if (userScriptHeader["@match"] !== void 0) {
-          manifest.content_scripts = [
-            {
-              matches: [userScriptHeader["@match"]],
+        const match = userScriptHeader.filter(([key]) => {
+          return key === "@match";
+        }).map(([key, val]) => {
+          return val;
+        });
+        if (match !== void 0) {
+          if (manifest.content_scripts === void 0) {
+            manifest.content_scripts = [
+              {
+                matches: match,
+                js: ["contentScript.js"]
+              }
+            ];
+          } else {
+            manifest.content_scripts.push({
+              matches: match,
               js: ["contentScript.js"]
-            }
-          ];
-          manifest.web_accessible_resources = [
-            {
-              matches: [userScriptHeader["@match"]],
+            });
+          }
+          if (manifest.web_accessible_resources === void 0 || manifest.web_accessible_resources === null) {
+            manifest.web_accessible_resources = [
+              {
+                matches: match,
+                resources: ["embed.js"]
+              }
+            ];
+          } else {
+            manifest.web_accessible_resources.push({
+              matches: match,
               resources: ["embed.js"]
-            }
-          ];
+            });
+          }
         }
         if (outFile !== void 0) {
           (0, import_fs4.writeFileSync)(

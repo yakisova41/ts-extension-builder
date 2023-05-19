@@ -14,20 +14,42 @@ export function makeManifest(
       build.onEnd(() => {
         const outFile = build.initialOptions.outfile;
 
-        if (userScriptHeader["@match"] !== undefined) {
-          manifest.content_scripts = [
-            {
-              matches: [userScriptHeader["@match"]],
-              js: ["contentScript.js"],
-            },
-          ];
+        const match = userScriptHeader
+          .filter(([key]) => {
+            return key === "@match";
+          })
+          .map(([key, val]) => {
+            return val;
+          });
 
-          manifest.web_accessible_resources = [
-            {
-              matches: [userScriptHeader["@match"]],
+        if (match !== undefined) {
+          if (manifest.content_scripts === undefined) {
+            manifest.content_scripts = [
+              {
+                matches: match,
+                js: ["contentScript.js"],
+              },
+            ];
+          } else {
+            manifest.content_scripts.push({
+              matches: match,
+              js: ["contentScript.js"],
+            });
+          }
+
+          if (manifest.web_accessible_resources === undefined) {
+            manifest.web_accessible_resources = [
+              {
+                matches: match,
+                resources: ["embed.js"],
+              },
+            ];
+          } else {
+            manifest.web_accessible_resources.push({
+              matches: match,
               resources: ["embed.js"],
-            },
-          ];
+            });
+          }
         }
 
         if (outFile !== undefined) {

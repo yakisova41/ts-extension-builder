@@ -50,15 +50,15 @@ ts-extension-config.js
 
 ```js
 module.exports = {
-  userScriptHeader: {
-    "@name": "userscript name",
-    "@version": "0.1",
-    "@license": "MIT",
-    "@author": "author",
-    "@description": "description",
-    "@match": "https://example.com",
-    "@namespace": "https://example.com",
-  },
+  userScriptHeader: [
+    ["@name", "userscript name"],
+    ["@version", "0.1"],
+    ["@license", "MIT"],
+    ["@author", "author"],
+    ["@description", "description"],
+    ["@match", "https://example.com"],
+    ["@namespace", "https://example.com"],
+  ],
   //dev server configuration for userscript development
   devServer: {
     port: 5173,
