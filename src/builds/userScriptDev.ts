@@ -7,6 +7,7 @@ import { DevServer } from "../lib/devServer";
 
 export default function userScriptDev(minify: boolean): void {
   const workingDir = process.cwd();
+  console.log("bu");
 
   void getConfig().then(async ({ userScriptHeader, esBuild, devServer }) => {
     /**
@@ -38,7 +39,10 @@ export default function userScriptDev(minify: boolean): void {
         entryPoints: [join(workingDir, "src", "index.ts")],
         outfile: join(__dirname, "../tmp/script.js"),
       },
-      esBuild
+      esBuild,
+      {
+        createEntry: false,
+      }
     );
 
     const ctx = await context(options);

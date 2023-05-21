@@ -10,7 +10,6 @@ export default function userScriptBuild(
   env: "development" | "production"
 ): void {
   const workingDir = process.cwd();
-
   void getConfig().then(async ({ userScriptHeader, esBuild, devServer }) => {
     const options = buildOptionsFactory(
       {
@@ -27,6 +26,7 @@ export default function userScriptBuild(
       },
       esBuild
     );
+
     void build(options);
   });
 }

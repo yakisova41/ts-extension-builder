@@ -1,6 +1,6 @@
 {
   "name": "ts-extension-builder",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "scripts": {
     "lint": "npx eslint --fix src/index.ts",
