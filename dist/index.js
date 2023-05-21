@@ -29237,15 +29237,59 @@ function getConfig() {
   });
 }
 
+// src/lib/createEntry.ts
+var import_fs2 = require("fs");
+var import_path = require("path");
+function createEntry(entryPath) {
+  if (!(0, import_fs2.existsSync)((0, import_path.join)(__dirname, "../tmp"))) {
+    (0, import_fs2.mkdirSync)((0, import_path.join)(__dirname, "../tmp"));
+  }
+  (0, import_fs2.writeFileSync)(
+    (0, import_path.join)(__dirname, "../tmp/entry.ts"),
+    [
+      `import main from "${entryPath}"`,
+      "const args = {}",
+      "if(typeof GM_info !== 'undefined'){",
+      " GM_info.script.grant.forEach(propatyName => {",
+      '   let keyName = propatyName.split("GM_")[1];',
+      '   if(keyName === "xmlhttpRequest"){',
+      '     keyName = "xmlHttpRequest"',
+      "   }",
+      "   args[propatyName] = GM[keyName]",
+      " })",
+      "}",
+      "main(args);"
+    ].join("\n")
+  );
+  return (0, import_path.join)(__dirname, "../tmp/entry.ts");
+}
+
 // src/lib/buildOptionsFactory.ts
-function buildOptionsFactory(options, configOptions) {
+function buildOptionsFactory(options, configOptions, option = { createEntry: true }) {
   const buildOptions = options;
   if (configOptions !== void 0) {
     Object.keys(configOptions).forEach((key) => {
-      if (key === "plugins" && buildOptions.plugins !== void 0) {
-        buildOptions.plugins = [...buildOptions.plugins, ...configOptions[key]];
-      } else if (key !== "format") {
-        buildOptions[key] = configOptions[key];
+      switch (key) {
+        case "plugins":
+          if (buildOptions.plugins !== void 0) {
+            buildOptions.plugins = [
+              ...buildOptions.plugins,
+              ...configOptions[key]
+            ];
+          }
+          break;
+        case "format":
+          buildOptions[key] = [createEntry(configOptions[key])];
+          break;
+        case "entryPoints":
+          if (option.createEntry) {
+            buildOptions[key] = [createEntry(configOptions[key])];
+          } else {
+            buildOptions[key] = configOptions[key];
+          }
+          break;
+        default:
+          buildOptions[key] = configOptions[key];
       }
     });
   }
@@ -29257,7 +29301,7 @@ var import_esbuild = require("esbuild");
 var import_path2 = require("path");
 
 // src/plugins/writeUserScriptHeader.ts
-var import_fs2 = require("fs");
+var import_fs3 = require("fs");
 function writeUserscriptHeader(userScriptHeader) {
   return {
     name: "writeUserscriptHeader",
@@ -29265,8 +29309,8 @@ function writeUserscriptHeader(userScriptHeader) {
       build4.onEnd(() => {
         const outFile = build4.initialOptions.outfile;
         if (outFile !== void 0) {
-          const buildResult = (0, import_fs2.readFileSync)(outFile);
-          (0, import_fs2.writeFileSync)(
+          const buildResult = (0, import_fs3.readFileSync)(outFile);
+          (0, import_fs3.writeFileSync)(
             outFile,
             [createUserScriptHeaderString(userScriptHeader), buildResult].join(
               "\n\n"
@@ -29285,33 +29329,6 @@ function createUserScriptHeaderString(userScriptHeader) {
   });
   userscriptHeaders.push("// ==/UserScript==");
   return userscriptHeaders.join("\n");
-}
-
-// src/lib/createEntry.ts
-var import_fs3 = require("fs");
-var import_path = require("path");
-function createEntry(entryPath) {
-  if (!(0, import_fs3.existsSync)((0, import_path.join)(__dirname, "../tmp"))) {
-    (0, import_fs3.mkdirSync)((0, import_path.join)(__dirname, "../tmp"));
-  }
-  (0, import_fs3.writeFileSync)(
-    (0, import_path.join)(__dirname, "../tmp/entry.ts"),
-    [
-      `import main from "${entryPath}"`,
-      "const args = {}",
-      "if(typeof GM_info !== 'undefined'){",
-      " GM_info.script.grant.forEach(propatyName => {",
-      '   let keyName = propatyName.split("GM_")[1];',
-      '   if(keyName === "xmlhttpRequest"){',
-      '     keyName = "xmlHttpRequest"',
-      "   }",
-      "   args[propatyName] = GM[keyName]",
-      " })",
-      "}",
-      "main(args);"
-    ].join("\n")
-  );
-  return (0, import_path.join)(__dirname, "../tmp/entry.ts");
 }
 
 // src/builds/userScriptBuild.ts
@@ -29369,7 +29386,7 @@ function makeManifest(manifest, userScriptHeader) {
               js: ["contentScript.js"]
             });
           }
-          if (manifest.web_accessible_resources === void 0 || manifest.web_accessible_resources === null) {
+          if (manifest.web_accessible_resources === void 0) {
             manifest.web_accessible_resources = [
               {
                 matches: match,
@@ -29653,6 +29670,7 @@ function startHotServer() {
 // src/builds/userScriptDev.ts
 function userScriptDev(minify) {
   const workingDir = process.cwd();
+  console.log("bu");
   void getConfig().then((_0) => __async(this, [_0], function* ({ userScriptHeader, esBuild, devServer }) {
     if (devServer !== void 0) {
       yield createDevClient(devServer, userScriptHeader);
@@ -29679,7 +29697,10 @@ function userScriptDev(minify) {
         entryPoints: [(0, import_path10.join)(workingDir, "src", "index.ts")],
         outfile: (0, import_path10.join)(__dirname, "../tmp/script.js")
       },
-      esBuild
+      esBuild,
+      {
+        createEntry: false
+      }
     );
     const ctx = yield (0, import_esbuild3.context)(options);
     const ds = DevServer();
