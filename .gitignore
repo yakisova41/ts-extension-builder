@@ -2,3 +2,4 @@
 /tmp
 bun.lockb
 package-lock.json
+.history
