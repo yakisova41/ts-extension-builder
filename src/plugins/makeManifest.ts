@@ -22,18 +22,45 @@ export function makeManifest(
             return val;
           });
 
+        const runAt = userScriptHeader.filter(([key]) => {
+          return key === "@run-at";
+        });
+
+        let runAtMode:
+          | "document_start"
+          | "document_end"
+          | "document_idle"
+          | null;
+        if (runAt.length > 0) {
+          let mode = runAt[0][1];
+          mode = mode.replace("-", "_");
+          if (
+            mode === "document_start" ||
+            mode === "document_end" ||
+            mode === "document_idle"
+          ) {
+            runAtMode = mode;
+          } else {
+            runAtMode = null;
+          }
+        } else {
+          runAtMode = null;
+        }
+
         if (match !== undefined) {
           if (manifest.content_scripts === undefined) {
             manifest.content_scripts = [
               {
                 matches: match,
                 js: ["contentScript.js"],
+                run_at: runAtMode !== null ? runAtMode : "document_idle",
               },
             ];
           } else {
             manifest.content_scripts.push({
               matches: match,
               js: ["contentScript.js"],
+              run_at: runAtMode !== null ? runAtMode : "document_idle",
             });
           }
 
