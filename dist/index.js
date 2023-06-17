@@ -29372,18 +29372,35 @@ function makeManifest(manifest, userScriptHeader) {
         }).map(([key, val]) => {
           return val;
         });
+        const runAt = userScriptHeader.filter(([key]) => {
+          return key === "@run-at";
+        });
+        let runAtMode;
+        if (runAt.length > 0) {
+          let mode = runAt[0][1];
+          mode = mode.replace("-", "_");
+          if (mode === "document_start" || mode === "document_end" || mode === "document_idle") {
+            runAtMode = mode;
+          } else {
+            runAtMode = null;
+          }
+        } else {
+          runAtMode = null;
+        }
         if (match !== void 0) {
           if (manifest.content_scripts === void 0) {
             manifest.content_scripts = [
               {
                 matches: match,
-                js: ["contentScript.js"]
+                js: ["contentScript.js"],
+                run_at: runAtMode !== null ? runAtMode : "document_idle"
               }
             ];
           } else {
             manifest.content_scripts.push({
               matches: match,
-              js: ["contentScript.js"]
+              js: ["contentScript.js"],
+              run_at: runAtMode !== null ? runAtMode : "document_idle"
             });
           }
           if (manifest.web_accessible_resources === void 0) {
