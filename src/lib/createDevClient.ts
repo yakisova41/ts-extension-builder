@@ -27,14 +27,16 @@ const socket = new WebSocket("ws://${host}:${sockport}");
 
 import("http://${host}:${port}/script").then(module => {
   const args = {}
-  GM_info.script.grant.forEach(propatyName => {
+  if(GM_info.script.grant !== undefined){
+    GM_info.script.grant.forEach(propatyName => {
       let keyName = propatyName.split("GM_")[1];
 
       if(keyName === "xmlhttpRequest"){
           keyName = "xmlHttpRequest"
       }
       args[propatyName] = GM[keyName]
-  })
+    })
+  }
   module.default(args)
 })`;
 }

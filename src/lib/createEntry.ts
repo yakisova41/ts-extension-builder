@@ -10,7 +10,7 @@ export default function createEntry(entryPath: string): string {
     [
       `import main from "${entryPath}"`,
       "const args = {}",
-      "if(typeof GM_info !== 'undefined'){",
+      "if(GM_info.script.grant !== undefined){",
       " GM_info.script.grant.forEach(propatyName => {",
       '   let keyName = propatyName.split("GM_")[1];',
       '   if(keyName === "xmlhttpRequest"){',
