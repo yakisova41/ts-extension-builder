@@ -104,6 +104,10 @@ module.exports = {
   assetsDir: path.join(__dirname, "assets"),
   //esbuild options
   esBuild: {},
+  //no sandbox
+  // Inserting stringified scripts into the body solves cases where scripts do not work in greasemonkey's sandbox environment.
+  // Note: GM functions are not available when this option is enabled
+  noSandbox: true,
 };
 ```
 
