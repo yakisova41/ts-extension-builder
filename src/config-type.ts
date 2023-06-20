@@ -8,6 +8,7 @@ export interface TsExtensionBuilderConfig {
   manifest?: JSONSchemaForGoogleChromeExtensionManifestFiles;
   locales?: Locales;
   assetsDir?: string;
+  noSandbox?: boolean;
 }
 
 export interface DevServer {

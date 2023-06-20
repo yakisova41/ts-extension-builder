@@ -2118,7 +2118,7 @@ var require_jsonfile = __commonJS({
       return obj;
     }
     var readFile = universalify.fromPromise(_readFile);
-    function readFileSync2(file, options = {}) {
+    function readFileSync3(file, options = {}) {
       if (typeof options === "string") {
         options = { encoding: options };
       }
@@ -2143,16 +2143,16 @@ var require_jsonfile = __commonJS({
       await universalify.fromCallback(fs.writeFile)(file, str, options);
     }
     var writeFile = universalify.fromPromise(_writeFile);
-    function writeFileSync7(file, obj, options = {}) {
+    function writeFileSync8(file, obj, options = {}) {
       const fs = options.fs || _fs;
       const str = stringify(obj, options);
       return fs.writeFileSync(file, str, options);
     }
     var jsonfile = {
       readFile,
-      readFileSync: readFileSync2,
+      readFileSync: readFileSync3,
       writeFile,
-      writeFileSync: writeFileSync7
+      writeFileSync: writeFileSync8
     };
     module2.exports = jsonfile;
   }
@@ -29249,7 +29249,7 @@ function createEntry(entryPath) {
     [
       `import main from "${entryPath}"`,
       "const args = {}",
-      "if(typeof GM_info !== 'undefined'){",
+      "if(typeof GM_info !== 'undefined' && GM_info.script.grant !== undefined){",
       " GM_info.script.grant.forEach(propatyName => {",
       '   let keyName = propatyName.split("GM_")[1];',
       '   if(keyName === "xmlhttpRequest"){',
@@ -29331,27 +29331,57 @@ function createUserScriptHeaderString(userScriptHeader) {
   return userscriptHeaders.join("\n");
 }
 
+// src/plugins/disableUserscriptSandbox.ts
+var import_fs4 = require("fs");
+function disableUserscriptSandbox() {
+  return {
+    name: "disableUserscriptSandbox",
+    setup(build4) {
+      build4.onEnd(() => {
+        const outFile = build4.initialOptions.outfile;
+        if (outFile !== void 0) {
+          const buildResult = (0, import_fs4.readFileSync)(outFile);
+          (0, import_fs4.writeFileSync)(
+            outFile,
+            [
+              [
+                `const scriptString = \`${buildResult.toString().replaceAll("`", "\\`").replaceAll("$", "\\$")}\`;`,
+                'const script = document.createElement("script");',
+                "script.innerHTML = scriptString",
+                "unsafeWindow.document.body.appendChild(script)"
+              ].join("\n")
+            ].join("\n\n")
+          );
+        }
+      });
+    }
+  };
+}
+
 // src/builds/userScriptBuild.ts
 function userScriptBuild(minify, env) {
   const workingDir = process.cwd();
-  void getConfig().then((_0) => __async(this, [_0], function* ({ userScriptHeader, esBuild, devServer }) {
-    const options = buildOptionsFactory(
-      {
-        logLevel: "info",
-        plugins: [writeUserscriptHeader(userScriptHeader)],
-        define: {
-          "process.env.NODE_ENV": `'${env}'`
+  void getConfig().then(
+    (_0) => __async(this, [_0], function* ({ userScriptHeader, esBuild, devServer, noSandbox }) {
+      const sandboxMode = noSandbox !== void 0 && noSandbox ? [disableUserscriptSandbox()] : [];
+      const options = buildOptionsFactory(
+        {
+          logLevel: "info",
+          plugins: [...sandboxMode, writeUserscriptHeader(userScriptHeader)],
+          define: {
+            "process.env.NODE_ENV": `'${env}'`
+          },
+          bundle: true,
+          minify,
+          format: "cjs",
+          entryPoints: [createEntry((0, import_path2.join)(workingDir, "src", "index.ts"))],
+          outfile: (0, import_path2.join)(workingDir, "dist", `index.user.js`)
         },
-        bundle: true,
-        minify,
-        format: "cjs",
-        entryPoints: [createEntry((0, import_path2.join)(workingDir, "src", "index.ts"))],
-        outfile: (0, import_path2.join)(workingDir, "dist", `index.user.js`)
-      },
-      esBuild
-    );
-    void (0, import_esbuild.build)(options);
-  }));
+        esBuild
+      );
+      void (0, import_esbuild.build)(options);
+    })
+  );
 }
 
 // src/builds/extensionBuild.ts
@@ -29359,7 +29389,7 @@ var import_esbuild2 = require("esbuild");
 var import_path7 = require("path");
 
 // src/plugins/makeManifest.ts
-var import_fs4 = require("fs");
+var import_fs5 = require("fs");
 var import_path3 = require("path");
 function makeManifest(manifest, userScriptHeader) {
   return {
@@ -29418,7 +29448,7 @@ function makeManifest(manifest, userScriptHeader) {
           }
         }
         if (outFile !== void 0) {
-          (0, import_fs4.writeFileSync)(
+          (0, import_fs5.writeFileSync)(
             (0, import_path3.join)((0, import_path3.dirname)(outFile), "/manifest.json"),
             JSON.stringify(manifest)
           );
@@ -29429,7 +29459,7 @@ function makeManifest(manifest, userScriptHeader) {
 }
 
 // src/plugins/makeLocales.ts
-var import_fs5 = require("fs");
+var import_fs6 = require("fs");
 var import_path4 = require("path");
 function makeLocales(locales) {
   return {
@@ -29439,15 +29469,15 @@ function makeLocales(locales) {
         const outFile = build4.initialOptions.outfile;
         if (outFile !== void 0) {
           const extensionDir = (0, import_path4.dirname)(outFile);
-          if (!(0, import_fs5.existsSync)((0, import_path4.join)(extensionDir, "/_locales"))) {
-            (0, import_fs5.mkdirSync)((0, import_path4.join)(extensionDir, "/_locales"));
+          if (!(0, import_fs6.existsSync)((0, import_path4.join)(extensionDir, "/_locales"))) {
+            (0, import_fs6.mkdirSync)((0, import_path4.join)(extensionDir, "/_locales"));
           }
           Object.keys(locales).forEach((langName) => {
             const langDir = (0, import_path4.join)(extensionDir, "/_locales/" + langName);
-            if (!(0, import_fs5.existsSync)(langDir)) {
-              (0, import_fs5.mkdirSync)(langDir);
+            if (!(0, import_fs6.existsSync)(langDir)) {
+              (0, import_fs6.mkdirSync)(langDir);
             }
-            (0, import_fs5.writeFileSync)(
+            (0, import_fs6.writeFileSync)(
               (0, import_path4.join)(langDir, "/messages.json"),
               JSON.stringify(locales[langName])
             );
@@ -29459,7 +29489,7 @@ function makeLocales(locales) {
 }
 
 // src/plugins/copyAssets.ts
-var import_fs6 = require("fs");
+var import_fs7 = require("fs");
 var import_fs_extra = __toESM(require_lib());
 var import_path5 = require("path");
 function copyAssets(assetsDir) {
@@ -29469,7 +29499,7 @@ function copyAssets(assetsDir) {
       build4.onEnd(() => {
         const outFile = build4.initialOptions.outfile;
         if (outFile !== void 0) {
-          if ((0, import_fs6.existsSync)(assetsDir)) {
+          if ((0, import_fs7.existsSync)(assetsDir)) {
             (0, import_fs_extra.copySync)(assetsDir, (0, import_path5.dirname)(outFile) + "/assets");
           }
         }
@@ -29479,7 +29509,7 @@ function copyAssets(assetsDir) {
 }
 
 // src/plugins/makeContentScript.ts
-var import_fs7 = require("fs");
+var import_fs8 = require("fs");
 var import_path6 = require("path");
 function makeContentScript() {
   return {
@@ -29488,7 +29518,7 @@ function makeContentScript() {
       build4.onEnd(() => {
         const outFile = build4.initialOptions.outfile;
         if (outFile !== void 0) {
-          (0, import_fs7.writeFileSync)(
+          (0, import_fs8.writeFileSync)(
             (0, import_path6.join)((0, import_path6.dirname)(outFile), "/contentScript.js"),
             [
               "const head = document.head;",
@@ -29563,7 +29593,7 @@ var import_esbuild3 = require("esbuild");
 var import_path10 = require("path");
 
 // src/lib/createDevClient.ts
-var import_fs8 = require("fs");
+var import_fs9 = require("fs");
 var import_path8 = require("path");
 function scriptFactory(host, port, sockport, userScriptHeader) {
   return `${createUserScriptHeaderString(userScriptHeader)}
@@ -29584,23 +29614,25 @@ const socket = new WebSocket("ws://${host}:${sockport}");
 
 import("http://${host}:${port}/script").then(module => {
   const args = {}
-  GM_info.script.grant.forEach(propatyName => {
+  if(GM_info.script.grant !== undefined){
+    GM_info.script.grant.forEach(propatyName => {
       let keyName = propatyName.split("GM_")[1];
 
       if(keyName === "xmlhttpRequest"){
           keyName = "xmlHttpRequest"
       }
       args[propatyName] = GM[keyName]
-  })
+    })
+  }
   module.default(args)
 })`;
 }
 function createDevClient(_0, _1) {
   return __async(this, arguments, function* ({ host, port, websocket }, userScriptHeader) {
-    if (!(0, import_fs8.existsSync)((0, import_path8.join)(__dirname, "../tmp"))) {
-      (0, import_fs8.mkdirSync)((0, import_path8.join)(__dirname, "../tmp"));
+    if (!(0, import_fs9.existsSync)((0, import_path8.join)(__dirname, "../tmp"))) {
+      (0, import_fs9.mkdirSync)((0, import_path8.join)(__dirname, "../tmp"));
     }
-    (0, import_fs8.writeFileSync)(
+    (0, import_fs9.writeFileSync)(
       (0, import_path8.join)(__dirname, "../tmp/client.user.js"),
       scriptFactory(host, port, websocket, userScriptHeader)
     );
