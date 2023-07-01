@@ -29345,9 +29345,10 @@ function disableUserscriptSandbox() {
             outFile,
             [
               [
-                `const scriptString = \`${buildResult.toString().replaceAll("`", "\\`").replaceAll("$", "\\$")}\`;`,
+                `const inject = ()=>{${buildResult.toString()}}`,
                 'const script = document.createElement("script");',
-                "script.innerHTML = scriptString",
+                // eslint-disable-next-line no-template-curly-in-string
+                "script.innerHTML = `(${inject.toString()})()`",
                 "unsafeWindow.document.body.appendChild(script)"
               ].join("\n")
             ].join("\n\n")
