@@ -8,6 +8,7 @@ export interface TsExtensionBuilderConfig {
     locales?: Locales;
     assetsDir?: string;
     noSandbox?: boolean;
+    passCSP?: boolean;
 }
 export interface DevServer {
     port: number;

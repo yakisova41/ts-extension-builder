@@ -108,6 +108,11 @@ module.exports = {
   // Inserting stringified scripts into the body solves cases where scripts do not work in greasemonkey's sandbox environment.
   // Note: GM functions are not available when this option is enabled
   noSandbox: true,
+
+  //pass CSP
+  // This mode avoids CSP when using hot reloads.
+  // Note: GM functions are not available when this option is enabled
+  passCSP: true,
 };
 ```
 
