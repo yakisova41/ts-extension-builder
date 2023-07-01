@@ -2143,7 +2143,7 @@ var require_jsonfile = __commonJS({
       await universalify.fromCallback(fs.writeFile)(file, str, options);
     }
     var writeFile = universalify.fromPromise(_writeFile);
-    function writeFileSync8(file, obj, options = {}) {
+    function writeFileSync9(file, obj, options = {}) {
       const fs = options.fs || _fs;
       const str = stringify(obj, options);
       return fs.writeFileSync(file, str, options);
@@ -2152,7 +2152,7 @@ var require_jsonfile = __commonJS({
       readFile,
       readFileSync: readFileSync3,
       writeFile,
-      writeFileSync: writeFileSync8
+      writeFileSync: writeFileSync9
     };
     module2.exports = jsonfile;
   }
@@ -5247,9 +5247,9 @@ var require_websocket = __commonJS({
         emitErrorAndClose(websocket, err);
       });
       req.on("response", (res) => {
-        const location = res.headers.location;
+        const location2 = res.headers.location;
         const statusCode = res.statusCode;
-        if (location && opts.followRedirects && statusCode >= 300 && statusCode < 400) {
+        if (location2 && opts.followRedirects && statusCode >= 300 && statusCode < 400) {
           if (++websocket._redirects > opts.maxRedirects) {
             abortHandshake(websocket, req, "Maximum redirects exceeded");
             return;
@@ -5257,9 +5257,9 @@ var require_websocket = __commonJS({
           req.abort();
           let addr;
           try {
-            addr = new URL(location, address);
+            addr = new URL(location2, address);
           } catch (e) {
-            const err = new SyntaxError(`Invalid URL: ${location}`);
+            const err = new SyntaxError(`Invalid URL: ${location2}`);
             emitErrorAndClose(websocket, err);
             return;
           }
@@ -24475,7 +24475,7 @@ var require_view = __commonJS({
     var dirname5 = path.dirname;
     var basename = path.basename;
     var extname = path.extname;
-    var join10 = path.join;
+    var join11 = path.join;
     var resolve = path.resolve;
     module2.exports = View;
     function View(name, options) {
@@ -24523,12 +24523,12 @@ var require_view = __commonJS({
     };
     View.prototype.resolve = function resolve2(dir, file) {
       var ext = this.ext;
-      var path2 = join10(dir, file);
+      var path2 = join11(dir, file);
       var stat = tryStat(path2);
       if (stat && stat.isFile()) {
         return path2;
       }
-      path2 = join10(dir, basename(file, ext), "index" + ext);
+      path2 = join11(dir, basename(file, ext), "index" + ext);
       stat = tryStat(path2);
       if (stat && stat.isFile()) {
         return path2;
@@ -25595,7 +25595,7 @@ var require_send = __commonJS({
     var Stream = require("stream");
     var util = require("util");
     var extname = path.extname;
-    var join10 = path.join;
+    var join11 = path.join;
     var normalize = path.normalize;
     var resolve = path.resolve;
     var sep = path.sep;
@@ -25814,7 +25814,7 @@ var require_send = __commonJS({
           return res;
         }
         parts = path2.split(sep);
-        path2 = normalize(join10(root, path2));
+        path2 = normalize(join11(root, path2));
       } else {
         if (UP_PATH_REGEXP.test(path2)) {
           debug('malicious path "%s"', path2);
@@ -25955,7 +25955,7 @@ var require_send = __commonJS({
             return self.onStatError(err);
           return self.error(404);
         }
-        var p = join10(path2, self._index[i]);
+        var p = join11(path2, self._index[i]);
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2)
@@ -28756,7 +28756,7 @@ var require_response = __commonJS({
       this.append("Set-Cookie", cookie.serialize(name, String(val), opts));
       return this;
     };
-    res.location = function location(url) {
+    res.location = function location2(url) {
       var loc = url;
       if (url === "back") {
         loc = this.req.get("Referrer") || "/";
@@ -29590,7 +29590,7 @@ var buildCommand_default = build3;
 
 // src/builds/userScriptDev.ts
 var import_esbuild3 = require("esbuild");
-var import_path10 = require("path");
+var import_path11 = require("path");
 
 // src/lib/createDevClient.ts
 var import_fs9 = require("fs");
@@ -29639,8 +29639,70 @@ function createDevClient(_0, _1) {
   });
 }
 
-// src/lib/devServer.ts
+// src/lib/createPassCSPDevClient.ts
+var import_fs10 = require("fs");
 var import_path9 = require("path");
+var DevScriptFactory = class {
+  constructor(host, port, userScriptHeader) {
+    __publicField(this, "host");
+    __publicField(this, "port");
+    __publicField(this, "userScriptHeader");
+    this.host = host;
+    this.port = port;
+    this.userScriptHeader = userScriptHeader;
+  }
+  create() {
+    const headerString = createUserScriptHeaderString([
+      ...this.userScriptHeader,
+      ["@grant", "GM.xmlHttpRequest"],
+      ["@grant", "unsafeWindow"]
+    ]);
+    const scriptString = this.createClientScript();
+    return `${headerString}
+${scriptString}`;
+  }
+  createClientScript() {
+    function clientScriptFnc(host, port) {
+      const getText = () => {
+        return new Promise((resolve) => {
+          void GM.xmlHttpRequest({
+            url: `http://${host}:${port}/script`,
+            onload: (e) => {
+              resolve(e.responseText);
+            }
+          });
+        });
+      };
+      void getText().then((nowText) => {
+        const scriptEl = document.createElement("script");
+        scriptEl.textContent = nowText;
+        unsafeWindow.document.body.appendChild(scriptEl);
+        setInterval(() => {
+          void getText().then((text) => {
+            if (nowText !== text) {
+              console.log("[ts-extension-builder] hot reload...");
+              location.reload();
+            }
+          });
+        }, 1e3);
+      });
+    }
+    return `${clientScriptFnc.toString()};
+clientScriptFnc( "${this.host}", ${this.port});`;
+  }
+};
+function createPassCSPDevClient(_0, _1) {
+  return __async(this, arguments, function* ({ host, port }, userScriptHeader) {
+    if (!(0, import_fs10.existsSync)((0, import_path9.join)(__dirname, "../tmp"))) {
+      (0, import_fs10.mkdirSync)((0, import_path9.join)(__dirname, "../tmp"));
+    }
+    const factory = new DevScriptFactory(host, port, userScriptHeader);
+    (0, import_fs10.writeFileSync)((0, import_path9.join)(__dirname, "../tmp/client.user.js"), factory.create());
+  });
+}
+
+// src/lib/devServer.ts
+var import_path10 = require("path");
 
 // node_modules/ws/wrapper.mjs
 var import_stream = __toESM(require_stream(), 1);
@@ -29672,10 +29734,10 @@ function startExpress() {
       const app = (0, import_express.default)();
       app.get("/script", (req, res) => {
         res.header("Access-Control-Allow-Origin", "*");
-        res.sendFile((0, import_path9.join)(__dirname, "../tmp", "script.js"));
+        res.sendFile((0, import_path10.join)(__dirname, "../tmp", "script.js"));
       });
       app.get("/index.user.js", (req, res) => {
-        res.sendFile((0, import_path9.join)(__dirname, "../tmp", "client.user.js"));
+        res.sendFile((0, import_path10.join)(__dirname, "../tmp", "client.user.js"));
       });
       app.listen(devServer.port, devServer.host, () => {
         console.log(
@@ -29719,44 +29781,51 @@ function startHotServer() {
 // src/builds/userScriptDev.ts
 function userScriptDev(minify) {
   const workingDir = process.cwd();
-  console.log("bu");
-  void getConfig().then((_0) => __async(this, [_0], function* ({ userScriptHeader, esBuild, devServer }) {
-    if (devServer !== void 0) {
-      yield createDevClient(devServer, userScriptHeader);
-    }
-    const options = buildOptionsFactory(
-      {
-        minify,
-        logLevel: "info",
-        define: {
-          "process.env.NODE_ENV": "'development'"
-        },
-        plugins: [
-          {
-            name: "onend",
-            setup(build4) {
-              build4.onEnd(() => {
-                ds.reload();
-              });
-            }
-          }
-        ],
-        bundle: true,
-        format: "esm",
-        entryPoints: [(0, import_path10.join)(workingDir, "src", "index.ts")],
-        outfile: (0, import_path10.join)(__dirname, "../tmp/script.js")
-      },
-      esBuild,
-      {
-        createEntry: false
+  void getConfig().then(
+    (_0) => __async(this, [_0], function* ({ userScriptHeader, esBuild, devServer, passCSP }) {
+      if (devServer !== void 0) {
+        if (passCSP === true) {
+          yield createPassCSPDevClient(devServer, userScriptHeader);
+        } else {
+          yield createDevClient(devServer, userScriptHeader);
+        }
       }
-    );
-    const ctx = yield (0, import_esbuild3.context)(options);
-    const ds = DevServer();
-    void ctx.watch().then(() => {
-      ds.start();
-    });
-  }));
+      const options = buildOptionsFactory(
+        {
+          minify,
+          logLevel: "info",
+          define: {
+            "process.env.NODE_ENV": "'development'"
+          },
+          plugins: [
+            {
+              name: "onend",
+              setup(build4) {
+                build4.onEnd(() => {
+                  ds.reload();
+                });
+              }
+            }
+          ],
+          bundle: true,
+          format: passCSP === true ? "cjs" : "esm",
+          entryPoints: [
+            passCSP === true ? createEntry((0, import_path11.join)(workingDir, "src", "index.ts")) : (0, import_path11.join)(workingDir, "src", "index.ts")
+          ],
+          outfile: (0, import_path11.join)(__dirname, "../tmp/script.js")
+        },
+        esBuild,
+        {
+          createEntry: false
+        }
+      );
+      const ctx = yield (0, import_esbuild3.context)(options);
+      const ds = DevServer();
+      void ctx.watch().then(() => {
+        ds.start();
+      });
+    })
+  );
 }
 
 // src/commands/devCommand.ts
