@@ -29392,7 +29392,7 @@ var import_path7 = require("path");
 // src/plugins/makeManifest.ts
 var import_fs5 = require("fs");
 var import_path3 = require("path");
-function makeManifest(manifest, userScriptHeader) {
+function makeManifest(manifest, userScriptHeader, loadMode) {
   return {
     name: "makeManifest",
     setup(build4) {
@@ -29434,18 +29434,20 @@ function makeManifest(manifest, userScriptHeader) {
               run_at: runAtMode !== null ? runAtMode : "document_idle"
             });
           }
-          if (manifest.web_accessible_resources === void 0) {
-            manifest.web_accessible_resources = [
-              {
+          if (loadMode === "inject") {
+            if (manifest.web_accessible_resources === void 0) {
+              manifest.web_accessible_resources = [
+                {
+                  matches: match,
+                  resources: ["embed.js"]
+                }
+              ];
+            } else {
+              manifest.web_accessible_resources.push({
                 matches: match,
                 resources: ["embed.js"]
-              }
-            ];
-          } else {
-            manifest.web_accessible_resources.push({
-              matches: match,
-              resources: ["embed.js"]
-            });
+              });
+            }
           }
         }
         if (outFile !== void 0) {
@@ -29538,16 +29540,24 @@ function makeContentScript() {
 function extensionBuild(minify, env) {
   const workingDir = process.cwd();
   void getConfig().then(
-    (_0) => __async(this, [_0], function* ({ esBuild, manifest, locales, assetsDir, userScriptHeader }) {
+    (_0) => __async(this, [_0], function* ({
+      esBuild,
+      manifest,
+      locales,
+      assetsDir,
+      userScriptHeader,
+      extensionLoadMode
+    }) {
       if (manifest !== void 0) {
+        const loadMode = extensionLoadMode === void 0 ? "inject" : extensionLoadMode;
         const options = buildOptionsFactory(
           {
             logLevel: "info",
             plugins: [
-              makeManifest(manifest, userScriptHeader),
+              makeManifest(manifest, userScriptHeader, loadMode),
               ...locales !== void 0 ? [makeLocales(locales)] : [],
               ...assetsDir !== void 0 ? [copyAssets(assetsDir)] : [],
-              makeContentScript()
+              ...loadMode === "inject" ? [makeContentScript()] : []
             ],
             define: {
               "process.env.NODE_ENV": `'${env}'`
@@ -29556,7 +29566,11 @@ function extensionBuild(minify, env) {
             minify,
             format: "cjs",
             entryPoints: [createEntry((0, import_path7.join)(workingDir, "src", "index.ts"))],
-            outfile: (0, import_path7.join)(workingDir, "dist", `/extension/embed.js`)
+            outfile: (0, import_path7.join)(
+              workingDir,
+              "dist",
+              loadMode === "inject" ? `/extension/embed.js` : "/extension/contentScript.js"
+            )
           },
           esBuild
         );
