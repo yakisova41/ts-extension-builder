@@ -6,7 +6,8 @@ import { type UserScriptHeader } from "../config-type";
 
 export function makeManifest(
   manifest: JSONSchemaForGoogleChromeExtensionManifestFiles,
-  userScriptHeader: UserScriptHeader
+  userScriptHeader: UserScriptHeader,
+  loadMode: "inject" | "contentScript"
 ): Plugin {
   return {
     name: "makeManifest",
@@ -64,18 +65,20 @@ export function makeManifest(
             });
           }
 
-          if (manifest.web_accessible_resources === undefined) {
-            manifest.web_accessible_resources = [
-              {
+          if (loadMode === "inject") {
+            if (manifest.web_accessible_resources === undefined) {
+              manifest.web_accessible_resources = [
+                {
+                  matches: match,
+                  resources: ["embed.js"],
+                },
+              ];
+            } else {
+              manifest.web_accessible_resources.push({
                 matches: match,
                 resources: ["embed.js"],
-              },
-            ];
-          } else {
-            manifest.web_accessible_resources.push({
-              matches: match,
-              resources: ["embed.js"],
-            });
+              });
+            }
           }
         }
 

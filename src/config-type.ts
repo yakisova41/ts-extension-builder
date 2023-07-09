@@ -10,6 +10,7 @@ export interface TsExtensionBuilderConfig {
   assetsDir?: string;
   noSandbox?: boolean;
   passCSP?: boolean;
+  extensionLoadMode?: "contentScript" | "inject";
 }
 
 export interface DevServer {

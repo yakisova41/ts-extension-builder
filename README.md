@@ -113,6 +113,13 @@ module.exports = {
   // This mode avoids CSP when using hot reloads.
   // Note: GM functions are not available when this option is enabled
   passCSP: true,
+
+  //load mode
+  // - inject
+  //    Inject script directly from content script into document head
+  // - contentScript
+  //    Run scripts with contentScript
+  extensionLoadMode: "inject",
 };
 ```
 
