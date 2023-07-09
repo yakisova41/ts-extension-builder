@@ -15,16 +15,26 @@ export default function extensionBuild(
   const workingDir = process.cwd();
 
   void getConfig().then(
-    async ({ esBuild, manifest, locales, assetsDir, userScriptHeader }) => {
+    async ({
+      esBuild,
+      manifest,
+      locales,
+      assetsDir,
+      userScriptHeader,
+      extensionLoadMode,
+    }) => {
       if (manifest !== undefined) {
+        const loadMode =
+          extensionLoadMode === undefined ? "inject" : extensionLoadMode;
+
         const options = buildOptionsFactory(
           {
             logLevel: "info",
             plugins: [
-              makeManifest(manifest, userScriptHeader),
+              makeManifest(manifest, userScriptHeader, loadMode),
               ...(locales !== undefined ? [makeLocales(locales)] : []),
               ...(assetsDir !== undefined ? [copyAssets(assetsDir)] : []),
-              makeContentScript(),
+              ...(loadMode === "inject" ? [makeContentScript()] : []),
             ],
             define: {
               "process.env.NODE_ENV": `'${env}'`,
@@ -33,7 +43,13 @@ export default function extensionBuild(
             minify,
             format: "cjs",
             entryPoints: [createEntry(join(workingDir, "src", "index.ts"))],
-            outfile: join(workingDir, "dist", `/extension/embed.js`),
+            outfile: join(
+              workingDir,
+              "dist",
+              loadMode === "inject"
+                ? `/extension/embed.js`
+                : "/extension/contentScript.js"
+            ),
           },
           esBuild
         );
