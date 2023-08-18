@@ -5,5 +5,6 @@ type EsbuildOptionsStringKey = {
 };
 export interface BuildOptionFcOptions {
     createEntry: boolean;
+    format?: "cjs" | "esm";
 }
 export {};

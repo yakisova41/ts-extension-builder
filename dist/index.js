@@ -29265,7 +29265,7 @@ function createEntry(entryPath) {
 }
 
 // src/lib/buildOptionsFactory.ts
-function buildOptionsFactory(options, configOptions, option = { createEntry: true }) {
+function buildOptionsFactory(options, configOptions, option = { createEntry: true, format: "esm" }) {
   const buildOptions = options;
   if (configOptions !== void 0) {
     Object.keys(configOptions).forEach((key) => {
@@ -29274,18 +29274,26 @@ function buildOptionsFactory(options, configOptions, option = { createEntry: tru
           if (buildOptions.plugins !== void 0) {
             buildOptions.plugins = [
               ...buildOptions.plugins,
-              ...configOptions[key]
+              ...configOptions.plugins
             ];
           }
           break;
         case "format":
-          buildOptions[key] = [createEntry(configOptions[key])];
+          if (option.format === "cjs") {
+            buildOptions.format = "cjs";
+          } else if (option.format === "esm") {
+            buildOptions.format = "esm";
+          } else {
+            buildOptions.format = configOptions[key];
+          }
           break;
         case "entryPoints":
           if (option.createEntry) {
-            buildOptions[key] = [createEntry(configOptions[key])];
+            buildOptions.entryPoints = configOptions.entryPoints.map(
+              (path) => createEntry(path)
+            );
           } else {
-            buildOptions[key] = configOptions[key];
+            buildOptions.entryPoints = configOptions.entryPoints;
           }
           break;
         default:
@@ -29831,7 +29839,8 @@ function userScriptDev(minify) {
         },
         esBuild,
         {
-          createEntry: false
+          createEntry: passCSP === true,
+          format: passCSP === true ? "cjs" : "esm"
         }
       );
       const ctx = yield (0, import_esbuild3.context)(options);
