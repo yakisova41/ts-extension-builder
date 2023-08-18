@@ -51,7 +51,8 @@ export default function userScriptDev(minify: boolean): void {
         },
         esBuild,
         {
-          createEntry: false,
+          createEntry: passCSP === true,
+          format: passCSP === true ? "cjs" : "esm",
         }
       );
 
