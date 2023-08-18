@@ -4,7 +4,7 @@ import createEntry from "./createEntry";
 export default function buildOptionsFactory(
   options: BuildOptions,
   configOptions?: EsbuildOptionsStringKey,
-  option: BuildOptionFcOptions = { createEntry: true }
+  option: BuildOptionFcOptions = { createEntry: true, format: "esm" }
 ): BuildOptions {
   const buildOptions: EsbuildOptionsStringKey = options;
 
@@ -15,20 +15,28 @@ export default function buildOptionsFactory(
           if (buildOptions.plugins !== undefined) {
             buildOptions.plugins = [
               ...buildOptions.plugins,
-              ...configOptions[key],
+              ...configOptions.plugins,
             ];
           }
           break;
 
         case "format":
-          buildOptions[key] = [createEntry(configOptions[key])];
+          if (option.format === "cjs") {
+            buildOptions.format = "cjs";
+          } else if (option.format === "esm") {
+            buildOptions.format = "esm";
+          } else {
+            buildOptions.format = configOptions[key];
+          }
           break;
 
         case "entryPoints":
           if (option.createEntry) {
-            buildOptions[key] = [createEntry(configOptions[key])];
+            buildOptions.entryPoints = configOptions.entryPoints.map(
+              (path: string) => createEntry(path)
+            );
           } else {
-            buildOptions[key] = configOptions[key];
+            buildOptions.entryPoints = configOptions.entryPoints;
           }
           break;
 
@@ -47,4 +55,5 @@ type EsbuildOptionsStringKey = {
 
 export interface BuildOptionFcOptions {
   createEntry: boolean;
+  format?: "cjs" | "esm";
 }
